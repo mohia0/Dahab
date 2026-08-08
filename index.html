@@ -331,29 +331,15 @@
   .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
   select.field-select{
-    font-weight:700;
     cursor:pointer;
-    background-color:var(--bg-elevated);
-    background-image:
-      linear-gradient(135deg, rgba(243,201,95,.16), rgba(243,201,95,.06)),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23f3c95f' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat:no-repeat, no-repeat;
-    background-position:left 8px center, left 15.5px center;
-    background-size:28px 28px, auto;
-    border-radius:999px 14px 14px 999px;
-    padding-inline-start:44px;
-    transition:border-color .15s ease, background-color .15s ease;
-  }
-  select.field-select:hover{ border-color:rgba(243,201,95,.32); }
-  select.field-select:focus{
-    background-image:
-      linear-gradient(135deg, rgba(243,201,95,.26), rgba(243,201,95,.1)),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23f3c95f' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23a89e8c' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:left 14px center;
+    padding-inline-start:38px;
   }
   select.field-select option{
     background:var(--bg-elevated);
     color:var(--text);
-    font-weight:700;
   }
 
   .add-btn{
