@@ -395,7 +395,7 @@
   .live-result-value-wrap{
     display:flex;
     align-items:baseline;
-    gap:5px;
+    gap:7px;
     direction:ltr;
     unicode-bidi:plaintext;
   }
@@ -410,6 +410,7 @@
     padding:0;
     max-width:150px;
     text-align:left;
+    flex-shrink:0;
   }
   .live-result-cur{
     font-family:'Cairo', sans-serif;
@@ -892,7 +893,7 @@
   }
 
   function sizeResultInput(input){
-    input.style.width = (Math.max(1, input.value.length) + 1) + "ch";
+    input.style.width = (Math.max(1, input.value.length) + 2) + "ch";
   }
 
   function updateLiveResult(){
