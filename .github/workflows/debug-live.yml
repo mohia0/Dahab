@@ -1,0 +1,27 @@
+name: Debug live page
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch live Pages HTML and check content
+        run: |
+          curl -sS -D - -o /tmp/live.html "https://mohia0.github.io/Dahab/" || true
+          echo "--- grep gold-api ---"
+          grep -o 'gold-api[^"]*' /tmp/live.html || echo "gold-api NOT FOUND"
+          echo "--- grep goldprice.dev (should be absent) ---"
+          grep -o 'goldprice.dev[^"]*' /tmp/live.html || echo "goldprice.dev not found (good)"
+          echo "--- grep karat option text ---"
+          grep -o 'عيار 24[^<]*' /tmp/live.html || true
+          grep -o '21 عيار[^<]*' /tmp/live.html || echo "no leftover 21-prefix bug found"
+      - name: Fetch live sw.js
+        run: |
+          curl -sS -D - -o /tmp/live-sw.js "https://mohia0.github.io/Dahab/sw.js" || true
+          echo "--- sw.js content ---"
+          cat /tmp/live-sw.js
+      - name: Actually call the gold API exactly like the browser does
+        run: |
+          curl -sS -D - "https://api.gold-api.com/price/XAU" || true
