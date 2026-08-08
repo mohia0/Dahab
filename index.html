@@ -267,6 +267,8 @@
     color:transparent;
     direction:ltr;
     unicode-bidi:plaintext;
+    display:inline-block;
+    transition:transform .25s ease;
   }
   .hero-total .cur{ font-size:20px; font-weight:800; margin-inline-start:6px; }
   .hero-sub{
@@ -275,6 +277,14 @@
     color:var(--text-faint);
   }
   .hero-sub b{ color:var(--text-dim); }
+
+  .hero-card.flash{ animation:heroFlash .7s ease; }
+  .hero-card.flash .hero-total{ transform:scale(1.06); }
+  @keyframes heroFlash{
+    0%{ box-shadow:0 10px 30px -14px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.02); }
+    30%{ box-shadow:0 10px 34px -10px rgba(243,201,95,.55), inset 0 1px 0 rgba(255,255,255,.05); border-color:rgba(243,201,95,.55); }
+    100%{ box-shadow:0 10px 30px -14px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.02); }
+  }
 
   /* Form */
   .field{ margin-bottom:12px; }
@@ -350,11 +360,14 @@
   .piece-row{
     display:flex;
     align-items:center;
-    gap:10px;
-    padding:12px 4px;
-    border-bottom:1px solid rgba(255,255,255,.05);
+    gap:12px;
+    padding:11px 13px;
+    margin-bottom:8px;
+    background:var(--bg-elevated);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
   }
-  .piece-row:last-child{ border-bottom:none; }
+  .piece-row:last-child{ margin-bottom:0; }
   .piece-info{ flex:1; min-width:0; }
   .piece-title{
     font-family:'Cairo', sans-serif;
@@ -364,9 +377,7 @@
     display:flex;
     align-items:center;
     gap:6px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    margin-bottom:4px;
   }
   .piece-title .k{
     background:var(--gold-soft);
@@ -377,27 +388,43 @@
     border-radius:999px;
     flex-shrink:0;
   }
-  .piece-meta{ font-size:12px; color:var(--text-faint); margin-top:2px; }
+  .piece-title .desc{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    min-width:0;
+  }
+  .piece-meta{ font-size:12px; color:var(--text-faint); }
+  .piece-side{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
   .piece-value{
     font-family:'Cairo', sans-serif;
     font-weight:800;
-    font-size:14.5px;
+    font-size:14px;
     color:var(--gold-1);
     direction:ltr;
     unicode-bidi:plaintext;
     white-space:nowrap;
   }
   .del-btn{
-    width:30px; height:30px;
+    width:20px; height:20px;
     border-radius:50%;
     border:1px solid rgba(232,85,106,.3);
     background:rgba(232,85,106,.08);
     color:var(--red);
-    font-size:14px;
+    font-size:10px;
+    line-height:1;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
     flex-shrink:0;
+    transition:background .15s ease, transform .12s ease;
   }
+  .del-btn:active{ transform:scale(.88); background:rgba(232,85,106,.2); }
   .empty-state{
     text-align:center;
     padding:26px 10px;
@@ -721,11 +748,13 @@
       var value = pieceValue(p);
       row.innerHTML =
         '<div class="piece-info">' +
-          '<div class="piece-title"><span class="k">' + p.karat + '</span><span>' + (p.desc ? escapeHtml(p.desc) : "قطعة ذهب") + '</span></div>' +
+          '<div class="piece-title"><span class="k">' + p.karat + '</span><span class="desc">' + (p.desc ? escapeHtml(p.desc) : "قطعة ذهب") + '</span></div>' +
           '<div class="piece-meta">' + fmtGrams(p.grams) + ' × ' + fmtMoneyPlain(p.pricePerGram) + ' ج.م/جم</div>' +
         '</div>' +
-        '<div class="piece-value">' + fmtMoney(value) + '</div>' +
-        '<div class="del-btn" data-id="' + p.id + '">✕</div>';
+        '<div class="piece-side">' +
+          '<div class="piece-value">' + fmtMoney(value) + '</div>' +
+          '<div class="del-btn" data-id="' + p.id + '">✕</div>' +
+        '</div>';
       list.appendChild(row);
     });
     list.querySelectorAll(".del-btn").forEach(function(btn){
@@ -908,7 +937,16 @@
     document.getElementById("pricePerGramInput").dataset.userEdited = "0";
 
     render();
+    flashHero();
   });
+
+  function flashHero(){
+    var card = document.querySelector(".hero-card");
+    card.classList.remove("flash");
+    void card.offsetWidth;
+    card.classList.add("flash");
+    setTimeout(function(){ card.classList.remove("flash"); }, 700);
+  }
 
   document.getElementById("settingsToggle").addEventListener("click", function(){
     document.getElementById("settingsPanel").classList.toggle("show");
