@@ -164,38 +164,37 @@
   .refresh-btn.spinning svg{ animation:spin 0.8s linear infinite; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
-  /* Price table */
-  table.price-table{
-    width:100%;
-    border-collapse:separate;
-    border-spacing:0 8px;
+  /* Price table (CSS grid, not a real <table> — Chrome doesn't clip a <tr>
+     background to per-<td> border-radius cleanly, which split each row
+     into separate pill-shaped cells; a grid renders identically everywhere) */
+  .price-grid-head{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    padding:0 8px 8px;
   }
-  table.price-table thead th{
+  .price-grid-head span{
     font-size:11.5px;
     font-weight:700;
     color:var(--text-faint);
     text-align:center;
-    padding-bottom:2px;
   }
-  table.price-table thead th:first-child{ text-align:right; }
-  table.price-table tbody tr{
+  .price-grid-head span:first-child{ text-align:right; }
+  .price-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    align-items:center;
     background:rgba(255,255,255,.015);
-  }
-  table.price-table tbody tr.highlight{
-    background:linear-gradient(90deg, rgba(243,201,95,.13), rgba(243,201,95,.04));
-  }
-  table.price-table td{
+    border-radius:12px;
     padding:12px 8px;
-    text-align:center;
+    margin-bottom:8px;
     font-family:'Cairo', sans-serif;
   }
-  table.price-table td:first-child{
-    text-align:right;
-    border-radius:12px 0 0 12px;
+  .price-row:last-child{ margin-bottom:0; }
+  .price-row.highlight{
+    background:linear-gradient(90deg, rgba(243,201,95,.13), rgba(243,201,95,.04));
   }
-  table.price-table td:last-child{ border-radius:0 12px 12px 0; }
   .karat-label{
-    display:inline-flex;
+    display:flex;
     align-items:center;
     gap:6px;
     font-weight:800;
@@ -204,8 +203,8 @@
   .karat-num{
     color:var(--gold-1);
   }
-  .price-buy{ color:var(--text); font-weight:800; font-size:14.5px; direction:ltr; unicode-bidi:plaintext; }
-  .price-sell{ color:var(--text-dim); font-weight:700; font-size:14.5px; direction:ltr; unicode-bidi:plaintext; }
+  .price-buy{ color:var(--text); font-weight:800; font-size:14.5px; direction:ltr; unicode-bidi:plaintext; text-align:center; }
+  .price-sell{ color:var(--text-dim); font-weight:700; font-size:14.5px; direction:ltr; unicode-bidi:plaintext; text-align:center; }
 
   .stale-note{
     display:none;
@@ -513,14 +512,12 @@
       ⚠️ الأسعار دي آخر نسخة محفوظة، مش لحظية دلوقتي — هنحاول نحدثها تاني.
     </div>
 
-    <table class="price-table">
-      <thead>
-        <tr><th>العيار</th><th>شراء</th><th>بيع</th></tr>
-      </thead>
-      <tbody id="priceTableBody">
-        <!-- rows injected -->
-      </tbody>
-    </table>
+    <div class="price-grid-head">
+      <span>العيار</span><span>شراء</span><span>بيع</span>
+    </div>
+    <div id="priceTableBody">
+      <!-- rows injected -->
+    </div>
 
     <div class="stat-grid">
       <div class="stat-box"><div class="label">الأونصة</div><span class="value" id="statOunce">—</span></div>
@@ -705,17 +702,17 @@
   }
 
   function renderPriceTable(){
-    var tbody = document.getElementById("priceTableBody");
-    tbody.innerHTML = "";
+    var body = document.getElementById("priceTableBody");
+    body.innerHTML = "";
     KARATS.forEach(function(k){
-      var row = document.createElement("tr");
-      if (k === 21) row.className = "highlight";
+      var row = document.createElement("div");
+      row.className = "price-row" + (k === 21 ? " highlight" : "");
       var d = state.egp ? state.egp[k] : null;
       row.innerHTML =
-        '<td><span class="karat-label"><span class="karat-num">' + k + '</span> عيار</span></td>' +
-        '<td class="price-buy">' + (d && d.buy!=null ? fmtMoneyPlain(d.buy) : "—") + '</td>' +
-        '<td class="price-sell">' + (d && d.sell!=null ? fmtMoneyPlain(d.sell) : "—") + '</td>';
-      tbody.appendChild(row);
+        '<div class="karat-label"><span class="karat-num">' + k + '</span> عيار</div>' +
+        '<div class="price-buy">' + (d && d.buy!=null ? fmtMoneyPlain(d.buy) : "—") + '</div>' +
+        '<div class="price-sell">' + (d && d.sell!=null ? fmtMoneyPlain(d.sell) : "—") + '</div>';
+      body.appendChild(row);
     });
   }
 
