@@ -995,20 +995,24 @@
   }
 
   function fetchGoldOunceUsd(){
-    return fetchWithTimeout("https://api.gold-api.com/price/XAU", 7000).then(function(r){
-      if (!r.ok) throw new Error("gold-api error");
+    // CoinGecko (PAXG, a token pegged 1:1 to a troy ounce of gold) is primary —
+    // api.gold-api.com was found to return the exact same cached price for 11+
+    // hours straight while claiming to be "updated a few seconds ago" each
+    // time, so it's kept only as a last-resort fallback, not trusted first.
+    return fetchWithTimeout("https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd", 7000).then(function(r){
+      if (!r.ok) throw new Error("coingecko error");
       return r.json();
     }).then(function(d){
-      var v = Number(d && d.price);
-      if (!v) throw new Error("bad gold-api payload");
+      var v = d && d["pax-gold"] && Number(d["pax-gold"].usd);
+      if (!v) throw new Error("bad coingecko payload");
       return v;
     }).catch(function(){
-      return fetchWithTimeout("https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd", 7000).then(function(r){
-        if (!r.ok) throw new Error("coingecko error");
+      return fetchWithTimeout("https://api.gold-api.com/price/XAU", 7000).then(function(r){
+        if (!r.ok) throw new Error("gold-api error");
         return r.json();
       }).then(function(d){
-        var v = d && d["pax-gold"] && Number(d["pax-gold"].usd);
-        if (!v) throw new Error("bad coingecko payload");
+        var v = Number(d && d.price);
+        if (!v) throw new Error("bad gold-api payload");
         return v;
       });
     });
