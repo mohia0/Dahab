@@ -287,13 +287,30 @@
   }
 
   /* Form */
-  .field{ margin-bottom:12px; }
+  .field{ margin-bottom:14px; }
   .field label{
-    display:block;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
     font-size:12.5px;
     color:var(--text-dim);
     margin-bottom:6px;
     font-weight:700;
+  }
+  .auto-badge{
+    font-size:10.5px;
+    font-weight:800;
+    color:var(--gold-1);
+    background:var(--gold-soft);
+    border:1px solid var(--border);
+    padding:2px 8px;
+    border-radius:999px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .auto-badge.edited{
+    color:var(--text-faint);
+    background:transparent;
+    border-color:var(--border);
   }
   .field input, .field select{
     width:100%;
@@ -341,6 +358,10 @@
 
   .add-btn{
     width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
     background:linear-gradient(135deg, var(--gold-1), var(--gold-2));
     color:#1a1200;
     font-family:'Cairo', sans-serif;
@@ -350,10 +371,11 @@
     padding:14px;
     border-radius:var(--radius-sm);
     cursor:pointer;
-    margin-top:4px;
+    margin-top:6px;
     box-shadow:0 8px 20px -8px rgba(243,201,95,.5);
     transition:transform .12s ease;
   }
+  .add-btn svg{ width:18px; height:18px; flex-shrink:0; }
   .add-btn:active{ transform:scale(.98); }
 
   /* Pieces list */
@@ -547,7 +569,7 @@
   <!-- Add piece -->
   <section class="card">
     <div class="card-title-row">
-      <div class="card-title">إضافة قطعة</div>
+      <div class="card-title">إضافة قطعة <span class="sub">جرامات وعيار وسعر</span></div>
     </div>
     <div class="row-2">
       <div class="field">
@@ -566,7 +588,7 @@
     </div>
     <div class="row-2">
       <div class="field">
-        <label>سعر الجرام (ج.م)</label>
+        <label>سعر الجرام (ج.م) <span class="auto-badge" id="autoBadge">تلقائي</span></label>
         <input type="number" id="pricePerGramInput" inputmode="decimal" step="0.01" placeholder="بيتملى تلقائي">
       </div>
       <div class="field">
@@ -574,7 +596,10 @@
         <input type="text" id="descInput" placeholder="مثال: خاتم">
       </div>
     </div>
-    <button class="add-btn" id="addBtn">+ إضافة القطعة</button>
+    <button class="add-btn" id="addBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      إضافة القطعة
+    </button>
   </section>
 
   <!-- Pieces list -->
@@ -690,6 +715,7 @@
     renderPieces();
     renderHero();
     prefillPricePerGram();
+    updateAutoBadge();
   }
 
   function renderPriceTable(){
@@ -789,6 +815,13 @@
     if (state.egp && state.egp[karat] && state.egp[karat].buy != null){
       input.value = (Math.round(state.egp[karat].buy * 100) / 100);
     }
+  }
+
+  function updateAutoBadge(){
+    var badge = document.getElementById("autoBadge");
+    var edited = document.getElementById("pricePerGramInput").dataset.userEdited === "1";
+    badge.textContent = edited ? "معدَّل" : "تلقائي";
+    badge.classList.toggle("edited", edited);
   }
 
   function setLive(isLive, stale){
@@ -902,9 +935,11 @@
   document.getElementById("karatSelect").addEventListener("change", function(){
     document.getElementById("pricePerGramInput").dataset.userEdited = "0";
     prefillPricePerGram();
+    updateAutoBadge();
   });
   document.getElementById("pricePerGramInput").addEventListener("input", function(e){
     e.target.dataset.userEdited = "1";
+    updateAutoBadge();
   });
 
   document.getElementById("addBtn").addEventListener("click", function(){
