@@ -25,3 +25,12 @@ jobs:
           curl -sS -D - -o /dev/null -H "Origin: https://mohia0.github.io" "https://api.goldprice.dev/v1/carat?currency=USD" | grep -i "access-control" || echo "NO CORS HEADER FOUND"
           echo "--- er-api.com CORS header check ---"
           curl -sS -D - -o /dev/null -H "Origin: https://mohia0.github.io" "https://open.er-api.com/v6/latest/USD" | grep -i "access-control" || echo "NO CORS HEADER FOUND"
+      - name: Test alternative gold price sources
+        run: |
+          echo "=== data-asg.goldprice.org ==="
+          curl -sS -D - -H "Origin: https://mohia0.github.io" "https://data-asg.goldprice.org/dbXRates/USD" || true
+          echo ""
+          echo "=== api.gold-api.com/price/XAU ==="
+          curl -sS -D - -H "Origin: https://mohia0.github.io" "https://api.gold-api.com/price/XAU" || true
+          echo ""
+          echo "=== gold.g.apised.com (metals.dev sample) skip ==="
