@@ -107,7 +107,6 @@
     margin-bottom:16px;
     box-shadow:0 10px 30px -14px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.02);
     position:relative;
-    overflow:hidden;
   }
   .card::before{
     content:"";
@@ -168,6 +167,41 @@
   .refresh-btn svg{ width:11px; height:11px; }
   .refresh-btn.spinning svg{ animation:spin 0.8s linear infinite; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .templates-wrap{ position:relative; }
+  .templates-menu{
+    display:none;
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    background:var(--bg-elevated);
+    border:1px solid var(--border);
+    min-width:160px;
+    z-index:5;
+    box-shadow:0 12px 26px -8px rgba(0,0,0,.55);
+  }
+  .templates-menu.show{ display:block; }
+  .template-option{
+    padding:10px 12px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    border-bottom:1px solid var(--border);
+  }
+  .template-option:last-child{ border-bottom:none; }
+  .template-option:active{ background:var(--gold-soft); }
+  .template-option span{
+    color:var(--text-faint);
+    font-size:11.5px;
+    font-weight:400;
+    direction:ltr;
+    unicode-bidi:plaintext;
+  }
 
   /* Prices card only — keep it compact, doesn't need as much breathing room as the other cards */
   #pricesCard{ padding:15px 18px 13px; margin-bottom:14px; }
@@ -318,21 +352,6 @@
     color:var(--text-dim);
     margin-bottom:6px;
     font-weight:700;
-  }
-  .auto-badge{
-    font-size:10.5px;
-    font-weight:800;
-    color:var(--gold-1);
-    background:var(--gold-soft);
-    border:1px solid var(--border);
-    padding:2px 8px;
-    border-radius:0;
-    transition:color .15s ease, background .15s ease, border-color .15s ease;
-  }
-  .auto-badge.edited{
-    color:var(--text-faint);
-    background:transparent;
-    border-color:var(--border);
   }
   .field input, .field select{
     width:100%;
@@ -538,7 +557,9 @@
     cursor:pointer;
     text-align:center;
   }
-  .settings-toggle svg{ width:13px; height:13px; flex-shrink:0; }
+  .settings-toggle svg.gear{ width:13px; height:13px; flex-shrink:0; }
+  .settings-toggle svg.chevron{ width:12px; height:12px; flex-shrink:0; transition:transform .2s ease; }
+  .settings-toggle.open svg.chevron{ transform:rotate(180deg); }
   .settings-panel{
     display:none;
     margin-top:6px;
@@ -615,8 +636,9 @@
       </div>
 
       <div class="settings-toggle" id="settingsToggle">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41L9.25 5.35c-.59.24-1.13.56-1.62.94L5.24 5.33c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58C4.84 11.36 4.8 11.69 4.8 12s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <svg class="gear" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41L9.25 5.35c-.59.24-1.13.56-1.62.94L5.24 5.33c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58C4.84 11.36 4.8 11.69 4.8 12s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
         إعدادات الحساب
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
       </div>
       <div class="settings-panel" id="settingsPanel">
         <div class="row-2">
@@ -648,7 +670,17 @@
   <!-- Add piece -->
   <section class="card" id="addPieceCard">
     <div class="card-title-row">
-      <div class="card-title">إضافة <span class="sub">جرامات وعيار وسعر</span></div>
+      <div class="card-title">الحاسبة <span class="sub">جرامات وعيار وسعر</span></div>
+      <div class="templates-wrap">
+        <button class="refresh-btn" id="templatesBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg>
+          قوالب
+        </button>
+        <div class="templates-menu" id="templatesMenu">
+          <div class="template-option" data-grams="8" data-karat="21">جنيه الدهب <span>٨ جم</span></div>
+          <div class="template-option" data-grams="31.1034768" data-karat="24">الأونصة <span>٣١.١ جم</span></div>
+        </div>
+      </div>
     </div>
     <div class="row-2">
       <div class="field">
@@ -667,7 +699,7 @@
     </div>
     <div class="row-2">
       <div class="field">
-        <label>سعر الجرام (ج.م) <span class="auto-badge" id="autoBadge">تلقائي</span></label>
+        <label>سعر الجرام (ج.م)</label>
         <input type="number" id="pricePerGramInput" inputmode="decimal" step="0.01" placeholder="بيتملى تلقائي">
       </div>
       <div class="field">
@@ -804,7 +836,6 @@
     renderPieces();
     renderHero();
     prefillPricePerGram();
-    updateAutoBadge();
     updateLiveResult();
   }
 
@@ -916,13 +947,6 @@
     }
   }
 
-  function updateAutoBadge(){
-    var badge = document.getElementById("autoBadge");
-    var edited = document.getElementById("pricePerGramInput").dataset.userEdited === "1";
-    badge.textContent = edited ? "معدَّل" : "تلقائي";
-    badge.classList.toggle("edited", edited);
-  }
-
   function sizeResultInput(input){
     input.style.width = (Math.max(1, input.value.length) + 2) + "ch";
   }
@@ -933,7 +957,7 @@
     var grams = parseFloat(document.getElementById("gramsInput").value);
     var price = parseFloat(document.getElementById("pricePerGramInput").value);
     if (grams > 0 && price > 0){
-      input.value = String(Math.round(grams * price));
+      input.value = fmtMoneyPlain(grams * price);
     } else {
       input.value = "0";
     }
@@ -1051,12 +1075,10 @@
   document.getElementById("karatSelect").addEventListener("change", function(){
     document.getElementById("pricePerGramInput").dataset.userEdited = "0";
     prefillPricePerGram();
-    updateAutoBadge();
     updateLiveResult();
   });
   document.getElementById("pricePerGramInput").addEventListener("input", function(e){
     e.target.dataset.userEdited = "1";
-    updateAutoBadge();
     updateLiveResult();
   });
   document.getElementById("gramsInput").addEventListener("input", updateLiveResult);
@@ -1069,7 +1091,7 @@
     var price = parseFloat(document.getElementById("pricePerGramInput").value);
     var gramsField = document.getElementById("gramsInput");
     if (!(price > 0)) return;
-    var v = parseFloat(e.target.value);
+    var v = parseFloat(e.target.value.replace(/,/g, ""));
     if (!(v > 0)){
       gramsField.value = "";
       return;
@@ -1080,6 +1102,26 @@
   liveResultInput.addEventListener("focus", function(){ this.select(); });
   liveResultInput.addEventListener("blur", updateLiveResult);
 
+  document.getElementById("templatesBtn").addEventListener("click", function(e){
+    e.stopPropagation();
+    document.getElementById("templatesMenu").classList.toggle("show");
+  });
+  document.querySelectorAll(".template-option").forEach(function(opt){
+    opt.addEventListener("click", function(){
+      var grams = parseFloat(opt.getAttribute("data-grams"));
+      var karat = opt.getAttribute("data-karat");
+      document.getElementById("gramsInput").value = (Math.round(grams * 100) / 100).toString();
+      document.getElementById("karatSelect").value = karat;
+      document.getElementById("pricePerGramInput").dataset.userEdited = "0";
+      prefillPricePerGram();
+      updateLiveResult();
+      document.getElementById("templatesMenu").classList.remove("show");
+    });
+  });
+  document.addEventListener("click", function(){
+    document.getElementById("templatesMenu").classList.remove("show");
+  });
+
   function startEditPiece(id){
     var piece = state.pieces.filter(function(p){ return String(p.id) === String(id); })[0];
     if (!piece) return;
@@ -1089,7 +1131,6 @@
     document.getElementById("pricePerGramInput").value = piece.pricePerGram;
     document.getElementById("pricePerGramInput").dataset.userEdited = "1";
     document.getElementById("descInput").value = piece.desc || "";
-    updateAutoBadge();
     updateLiveResult();
     setEditMode(true);
     document.getElementById("addPieceCard").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1167,7 +1208,8 @@
   }
 
   document.getElementById("settingsToggle").addEventListener("click", function(){
-    document.getElementById("settingsPanel").classList.toggle("show");
+    var open = document.getElementById("settingsPanel").classList.toggle("show");
+    document.getElementById("settingsToggle").classList.toggle("open", open);
   });
 
   document.getElementById("collapseToggle").addEventListener("click", function(){
