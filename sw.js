@@ -1,4 +1,4 @@
-const CACHE_NAME = "dahaby-static-v1";
+const CACHE_NAME = "dahaby-static-v2";
 const PRECACHE_URLS = [
   "./",
   "./index.html",
@@ -10,7 +10,7 @@ const PRECACHE_URLS = [
 
 // Requests to these hosts must never be served from (or written to) cache —
 // gold/exchange prices have to stay live.
-const NO_CACHE_HOSTS = ["api.goldprice.dev", "open.er-api.com"];
+const NO_CACHE_HOSTS = ["api.gold-api.com", "open.er-api.com"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

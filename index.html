@@ -779,7 +779,7 @@
     btn.classList.add("spinning");
     setLive(false, false);
 
-    var goldPromise = fetchWithTimeout("https://api.goldprice.dev/v1/carat?currency=USD", 9000).then(function(r){
+    var goldPromise = fetchWithTimeout("https://api.gold-api.com/price/XAU", 9000).then(function(r){
       if (!r.ok) throw new Error("gold api error");
       return r.json();
     });
@@ -794,13 +794,16 @@
       var egpRate = fx && fx.rates && fx.rates.EGP;
       if (!egpRate) throw new Error("no egp rate");
 
+      var ounceUsd = Number(gold.price);
+      if (!ounceUsd) throw new Error("bad gold payload");
+      var gram24Usd = ounceUsd / 31.1034768;
+
       var usd = {
-        24: Number(gold.price_gram_24k),
-        21: Number(gold.price_gram_21k),
-        18: Number(gold.price_gram_18k),
-        14: Number(gold.price_gram_14k)
+        24: gram24Usd,
+        21: gram24Usd * (21 / 24),
+        18: gram24Usd * (18 / 24),
+        14: gram24Usd * (14 / 24)
       };
-      if (!usd[24] || !usd[21]) throw new Error("bad gold payload");
 
       state.prices = { usd: usd, egp_rate: Number(egpRate), fetchedAt: Date.now() };
       state.isStale = false;
