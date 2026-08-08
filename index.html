@@ -164,16 +164,20 @@
   .refresh-btn.spinning svg{ animation:spin 0.8s linear infinite; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
+  /* Prices card only — keep it compact, doesn't need as much breathing room as the other cards */
+  #pricesCard{ padding:15px 18px 13px; margin-bottom:14px; }
+  #pricesCard .card-title-row{ margin-bottom:10px; }
+
   /* Price table (CSS grid, not a real <table> — Chrome doesn't clip a <tr>
      background to per-<td> border-radius cleanly, which split each row
      into separate pill-shaped cells; a grid renders identically everywhere) */
   .price-grid-head{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
-    padding:0 8px 8px;
+    padding:0 8px 5px;
   }
   .price-grid-head span{
-    font-size:11.5px;
+    font-size:11px;
     font-weight:700;
     color:var(--text-faint);
     text-align:center;
@@ -185,8 +189,8 @@
     align-items:center;
     background:rgba(255,255,255,.015);
     border-radius:0;
-    padding:12px 8px;
-    margin-bottom:8px;
+    padding:8px 8px;
+    margin-bottom:5px;
     font-family:'Cairo', sans-serif;
   }
   .price-row:last-child{ margin-bottom:0; }
@@ -224,20 +228,20 @@
   .stat-grid{
     display:grid;
     grid-template-columns:repeat(2, 1fr);
-    gap:8px;
-    margin-top:14px;
+    gap:6px;
+    margin-top:9px;
   }
   .stat-box{
     background:var(--bg-elevated);
     border:1px solid var(--border);
     border-radius:var(--radius-sm);
-    padding:11px 12px;
+    padding:8px 10px;
   }
-  .stat-box .label{ font-size:11px; color:var(--text-faint); margin-bottom:4px; }
+  .stat-box .label{ font-size:10.5px; color:var(--text-faint); margin-bottom:2px; }
   .stat-box .value{
     font-family:'Cairo', sans-serif;
     font-weight:800;
-    font-size:15px;
+    font-size:14px;
     color:var(--gold-1);
     direction:ltr;
     unicode-bidi:plaintext;
@@ -362,6 +366,26 @@
   }
   .add-btn svg{ width:18px; height:18px; flex-shrink:0; }
   .add-btn:active{ transform:scale(.98); }
+
+  .live-result{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--gold-soft);
+    border:1px solid var(--border);
+    padding:12px 14px;
+    margin-bottom:4px;
+  }
+  .live-result-label{ font-size:12.5px; color:var(--text-dim); font-weight:700; }
+  .live-result-value{
+    font-family:'Cairo', sans-serif;
+    font-weight:900;
+    font-size:20px;
+    color:var(--gold-1);
+    direction:ltr;
+    unicode-bidi:plaintext;
+    transition:transform .12s ease;
+  }
 
   /* Pieces list */
   .piece-row{
@@ -579,6 +603,10 @@
         <input type="text" id="descInput" placeholder="مثال: خاتم">
       </div>
     </div>
+    <div class="live-result">
+      <span class="live-result-label">الناتج</span>
+      <span class="live-result-value" id="liveResultValue">٠ ج.م</span>
+    </div>
     <button class="add-btn" id="addBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       إضافة القطعة
@@ -699,6 +727,7 @@
     renderHero();
     prefillPricePerGram();
     updateAutoBadge();
+    updateLiveResult();
   }
 
   function renderPriceTable(){
@@ -805,6 +834,17 @@
     var edited = document.getElementById("pricePerGramInput").dataset.userEdited === "1";
     badge.textContent = edited ? "معدَّل" : "تلقائي";
     badge.classList.toggle("edited", edited);
+  }
+
+  function updateLiveResult(){
+    var grams = parseFloat(document.getElementById("gramsInput").value);
+    var price = parseFloat(document.getElementById("pricePerGramInput").value);
+    var el = document.getElementById("liveResultValue");
+    if (grams > 0 && price > 0){
+      el.textContent = fmtMoney(grams * price);
+    } else {
+      el.textContent = "٠ ج.م";
+    }
   }
 
   function setLive(isLive, stale){
@@ -919,11 +959,14 @@
     document.getElementById("pricePerGramInput").dataset.userEdited = "0";
     prefillPricePerGram();
     updateAutoBadge();
+    updateLiveResult();
   });
   document.getElementById("pricePerGramInput").addEventListener("input", function(e){
     e.target.dataset.userEdited = "1";
     updateAutoBadge();
+    updateLiveResult();
   });
+  document.getElementById("gramsInput").addEventListener("input", updateLiveResult);
 
   document.getElementById("addBtn").addEventListener("click", function(){
     var grams = parseFloat(document.getElementById("gramsInput").value);
