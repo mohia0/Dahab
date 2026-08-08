@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>دهبي — حاسبة سعر الذهب لحظيًا</title>
+<meta name="description" content="سعر الذهب في مصر لحظيًا بالجنيه، واحسب قيمة مشغولاتك الذهبية فورًا.">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="background-color" content="#0a0a0a">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="دهبي">
+<meta name="format-detection" content="telephone=no">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --bg-elevated:#141210;
+    --card:#151311;
+    --card-2:#1b1815;
+    --border:rgba(243,201,95,.14);
+    --gold-1:#f3c95f;
+    --gold-2:#8a6f2e;
+    --gold-soft:rgba(243,201,95,.10);
+    --text:#f3ede0;
+    --text-dim:#a89e8c;
+    --text-faint:#6f6656;
+    --green:#3ecf6a;
+    --red:#e8556a;
+    --radius:20px;
+    --radius-sm:14px;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{-webkit-text-size-adjust:100%;}
+
+  body{
+    background:
+      radial-gradient(ellipse 120% 60% at 50% -10%, rgba(243,201,95,.09), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Tajawal', sans-serif;
+    min-height:100vh;
+    padding-bottom:48px;
+  }
+
+  .wrap{
+    max-width:520px;
+    margin:0 auto;
+    padding:18px 16px 8px;
+  }
+
+  /* Header */
+  header.app-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:6px 4px 20px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .brand svg{ width:38px; height:38px; flex-shrink:0; filter:drop-shadow(0 2px 8px rgba(243,201,95,.35)); }
+  .brand-name{
+    font-family:'Cairo', sans-serif;
+    font-weight:900;
+    font-size:26px;
+    background:linear-gradient(135deg, var(--gold-1), var(--gold-2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .live-badge{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:var(--text-dim);
+    background:var(--card-2);
+    border:1px solid var(--border);
+    padding:6px 12px;
+    border-radius:999px;
+  }
+  .dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 0 0 rgba(62,207,106,.6);
+    animation:pulse 1.8s infinite;
+  }
+  .dot.offline{ background:var(--text-faint); animation:none; box-shadow:none; }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(62,207,106,.55); }
+    70%{ box-shadow:0 0 0 7px rgba(62,207,106,0); }
+    100%{ box-shadow:0 0 0 0 rgba(62,207,106,0); }
+  }
+
+  /* Card base */
+  .card{
+    background:linear-gradient(160deg, var(--card-2), var(--card) 60%);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px;
+    margin-bottom:16px;
+    box-shadow:0 10px 30px -14px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.02);
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute; inset:0 0 auto 0; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(243,201,95,.4), transparent);
+  }
+
+  .card-title-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .card-title{
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size:15px;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card-title .sub{
+    font-family:'Tajawal', sans-serif;
+    font-weight:400;
+    font-size:11.5px;
+    color:var(--text-faint);
+  }
+
+  .refresh-btn{
+    display:flex; align-items:center; gap:6px;
+    background:var(--gold-soft);
+    border:1px solid var(--border);
+    color:var(--gold-1);
+    font-family:'Tajawal', sans-serif;
+    font-size:12.5px;
+    font-weight:700;
+    padding:7px 12px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .refresh-btn:active{ transform:scale(.94); background:rgba(243,201,95,.18); }
+  .refresh-btn svg{ width:14px; height:14px; }
+  .refresh-btn.spinning svg{ animation:spin 0.8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* Price table */
+  table.price-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 8px;
+  }
+  table.price-table thead th{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--text-faint);
+    text-align:center;
+    padding-bottom:2px;
+  }
+  table.price-table thead th:first-child{ text-align:right; }
+  table.price-table tbody tr{
+    background:rgba(255,255,255,.015);
+  }
+  table.price-table tbody tr.highlight{
+    background:linear-gradient(90deg, rgba(243,201,95,.13), rgba(243,201,95,.04));
+  }
+  table.price-table td{
+    padding:12px 8px;
+    text-align:center;
+    font-family:'Cairo', sans-serif;
+  }
+  table.price-table td:first-child{
+    text-align:right;
+    border-radius:12px 0 0 12px;
+  }
+  table.price-table td:last-child{ border-radius:0 12px 12px 0; }
+  .karat-label{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-weight:800;
+    font-size:14px;
+  }
+  .karat-num{
+    color:var(--gold-1);
+  }
+  .price-buy{ color:var(--text); font-weight:800; font-size:14.5px; direction:ltr; unicode-bidi:plaintext; }
+  .price-sell{ color:var(--text-dim); font-weight:700; font-size:14.5px; direction:ltr; unicode-bidi:plaintext; }
+
+  .stale-note{
+    display:none;
+    align-items:center;
+    gap:8px;
+    background:rgba(232,85,106,.08);
+    border:1px solid rgba(232,85,106,.25);
+    color:#f0a3af;
+    font-size:12px;
+    padding:9px 12px;
+    border-radius:var(--radius-sm);
+    margin-bottom:12px;
+  }
+  .stale-note.show{ display:flex; }
+
+  /* Stat mini grid */
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:8px;
+    margin-top:14px;
+  }
+  .stat-box{
+    background:var(--bg-elevated);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:11px 12px;
+  }
+  .stat-box .label{ font-size:11px; color:var(--text-faint); margin-bottom:4px; }
+  .stat-box .value{
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size:15px;
+    color:var(--gold-1);
+    direction:ltr;
+    unicode-bidi:plaintext;
+    display:block;
+  }
+
+  /* Hero total card */
+  .hero-card{
+    text-align:center;
+    padding:26px 18px 22px;
+  }
+  .hero-card .label{
+    font-size:13px;
+    color:var(--text-dim);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .hero-total{
+    font-family:'Cairo', sans-serif;
+    font-weight:900;
+    font-size:44px;
+    line-height:1.15;
+    background:linear-gradient(135deg, var(--gold-1), #fff2cf 40%, var(--gold-2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    direction:ltr;
+    unicode-bidi:plaintext;
+  }
+  .hero-total .cur{ font-size:20px; font-weight:800; margin-inline-start:6px; }
+  .hero-sub{
+    margin-top:10px;
+    font-size:12.5px;
+    color:var(--text-faint);
+  }
+  .hero-sub b{ color:var(--text-dim); }
+
+  /* Form */
+  .field{ margin-bottom:12px; }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    color:var(--text-dim);
+    margin-bottom:6px;
+    font-weight:700;
+  }
+  .field input, .field select{
+    width:100%;
+    background:var(--bg-elevated);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-family:'Tajawal', sans-serif;
+    font-size:15px;
+    padding:13px 14px;
+    border-radius:var(--radius-sm);
+    outline:none;
+    transition:border-color .15s ease;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .field input:focus, .field select:focus{ border-color:var(--gold-1); }
+  .field input::placeholder{ color:var(--text-faint); }
+  .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  select.field-select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23f3c95f' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:left 14px center;
+    padding-left:34px;
+  }
+
+  .add-btn{
+    width:100%;
+    background:linear-gradient(135deg, var(--gold-1), var(--gold-2));
+    color:#1a1200;
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size:15.5px;
+    border:none;
+    padding:14px;
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    margin-top:4px;
+    box-shadow:0 8px 20px -8px rgba(243,201,95,.5);
+    transition:transform .12s ease;
+  }
+  .add-btn:active{ transform:scale(.98); }
+
+  /* Pieces list */
+  .piece-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 4px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  .piece-row:last-child{ border-bottom:none; }
+  .piece-info{ flex:1; min-width:0; }
+  .piece-title{
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .piece-title .k{
+    background:var(--gold-soft);
+    color:var(--gold-1);
+    font-size:11px;
+    font-weight:800;
+    padding:2px 7px;
+    border-radius:999px;
+    flex-shrink:0;
+  }
+  .piece-meta{ font-size:12px; color:var(--text-faint); margin-top:2px; }
+  .piece-value{
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size:14.5px;
+    color:var(--gold-1);
+    direction:ltr;
+    unicode-bidi:plaintext;
+    white-space:nowrap;
+  }
+  .del-btn{
+    width:30px; height:30px;
+    border-radius:50%;
+    border:1px solid rgba(232,85,106,.3);
+    background:rgba(232,85,106,.08);
+    color:var(--red);
+    font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .empty-state{
+    text-align:center;
+    padding:26px 10px;
+    color:var(--text-faint);
+    font-size:13px;
+  }
+  .empty-state svg{ width:40px; height:40px; opacity:.35; margin-bottom:10px; }
+
+  /* Settings toggle */
+  .settings-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    color:var(--text-faint);
+    font-size:12.5px;
+    padding:10px;
+    cursor:pointer;
+    text-align:center;
+  }
+  .settings-panel{
+    display:none;
+    margin-top:6px;
+  }
+  .settings-panel.show{ display:block; }
+  .settings-panel .row-2{ margin-bottom:2px; }
+  .settings-hint{ font-size:11px; color:var(--text-faint); margin-top:8px; line-height:1.6; }
+
+  footer.app-footer{
+    text-align:center;
+    color:var(--text-faint);
+    font-size:11px;
+    padding:18px 10px 4px;
+    line-height:1.8;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app-header">
+    <div class="brand">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#fbe3a1"/>
+            <stop offset="100%" stop-color="#c79a3d"/>
+          </linearGradient>
+          <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f3c95f"/>
+            <stop offset="100%" stop-color="#8a6f2e"/>
+          </linearGradient>
+        </defs>
+        <polygon points="18,32 82,32 63,32 50,10 37,32" fill="url(#lg1)"/>
+        <polygon points="18,32 37,32 50,88" fill="url(#lg2)"/>
+        <polygon points="37,32 63,32 50,88" fill="url(#lg2)" opacity="0.92"/>
+        <polygon points="63,32 82,32 50,88" fill="url(#lg2)" opacity="0.8"/>
+      </svg>
+      <span class="brand-name">دهبي</span>
+    </div>
+    <div class="live-badge">
+      <span class="dot" id="liveDot"></span>
+      <span id="liveText">لايف</span>
+    </div>
+  </header>
+
+  <!-- Prices card -->
+  <section class="card" id="pricesCard">
+    <div class="card-title-row">
+      <div class="card-title">أسعار الذهب الآن <span class="sub" id="updatedAt">جارِ التحديث...</span></div>
+      <button class="refresh-btn" id="refreshBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.6-6.36M21 3v6h-6"/></svg>
+        تحديث
+      </button>
+    </div>
+
+    <div class="stale-note" id="staleNote">
+      ⚠️ الأسعار دي آخر نسخة محفوظة، مش لحظية دلوقتي — هنحاول نحدثها تاني.
+    </div>
+
+    <table class="price-table">
+      <thead>
+        <tr><th>العيار</th><th>شراء</th><th>بيع</th></tr>
+      </thead>
+      <tbody id="priceTableBody">
+        <!-- rows injected -->
+      </tbody>
+    </table>
+
+    <div class="stat-grid">
+      <div class="stat-box"><div class="label">الأونصة</div><span class="value" id="statOunce">—</span></div>
+      <div class="stat-box"><div class="label">جنيه الدهب</div><span class="value" id="statPound">—</span></div>
+      <div class="stat-box"><div class="label">كيلو عيار 24</div><span class="value" id="statKilo">—</span></div>
+      <div class="stat-box"><div class="label">سعر الدولار</div><span class="value" id="statUsd">—</span></div>
+    </div>
+
+    <div class="settings-toggle" id="settingsToggle">⚙️ إعدادات الحساب</div>
+    <div class="settings-panel" id="settingsPanel">
+      <div class="row-2">
+        <div class="field">
+          <label>هامش السوق المحلي %</label>
+          <input type="number" id="marginInput" step="0.1" inputmode="decimal" placeholder="0">
+        </div>
+        <div class="field">
+          <label>عمولة الكسر %</label>
+          <input type="number" id="commissionInput" step="0.01" inputmode="decimal" placeholder="0.83">
+        </div>
+      </div>
+      <div class="settings-hint">عمولة الكسر بتتخصم من سعر البيع عشان نطلع سعر الشراء. هامش السوق المحلي تقدر تظبطه لو حسيت إن في فرق عن محلات منطقتك.</div>
+    </div>
+  </section>
+
+  <!-- Hero total -->
+  <section class="card hero-card">
+    <div class="label">معايا كام</div>
+    <div class="hero-total"><span id="heroTotal">٠</span><span class="cur">ج.م</span></div>
+    <div class="hero-sub"><b id="heroGrams">٠ جم</b> إجمالي وزن الذهب اللي عندك</div>
+  </section>
+
+  <!-- Add piece -->
+  <section class="card">
+    <div class="card-title-row">
+      <div class="card-title">إضافة قطعة</div>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>الوزن (جم)</label>
+        <input type="number" id="gramsInput" inputmode="decimal" step="0.01" placeholder="مثال: 5.5">
+      </div>
+      <div class="field">
+        <label>العيار</label>
+        <select id="karatSelect" class="field-select">
+          <option value="24">21 عيار 24</option>
+          <option value="21" selected>21 عيار 21</option>
+          <option value="18">18 عيار 18</option>
+          <option value="14">14 عيار 14</option>
+        </select>
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>سعر الجرام (ج.م)</label>
+        <input type="number" id="pricePerGramInput" inputmode="decimal" step="0.01" placeholder="بيتملى تلقائي">
+      </div>
+      <div class="field">
+        <label>الوصف (اختياري)</label>
+        <input type="text" id="descInput" placeholder="مثال: خاتم">
+      </div>
+    </div>
+    <button class="add-btn" id="addBtn">+ إضافة القطعة</button>
+  </section>
+
+  <!-- Pieces list -->
+  <section class="card">
+    <div class="card-title-row">
+      <div class="card-title">قطعك المضافة</div>
+    </div>
+    <div id="piecesList">
+      <div class="empty-state" id="emptyState">
+        <svg viewBox="0 0 100 100" fill="none" stroke="#6f6656" stroke-width="4"><polygon points="18,32 82,32 50,88"/><polygon points="18,32 82,32 50,10"/></svg>
+        <div>لسه مفيش قطع مضافة</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="app-footer">
+    الأسعار استرشادية وتقريبية، وممكن تختلف شوية عن محلات الصاغة القريبة منك.<br>
+    دهبي — حاسبة سعر الذهب المصري
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var KARATS = [24, 21, 18, 14];
+  var STORAGE_PIECES = "dahaby_pieces";
+  var STORAGE_CACHE = "dahaby_price_cache";
+  var STORAGE_SETTINGS = "dahaby_settings";
+  var REFRESH_MS = 60000;
+
+  var state = {
+    prices: null,      // { usd:{24,21,18,14}, egp_rate, fetchedAt }
+    egp: null,          // { 24:{buy,sell}, 21:{...}, ... }
+    pieces: [],
+    settings: { margin: 0, commission: 0.83 },
+    isStale: false
+  };
+
+  function toArabicNum(n){
+    // Keep Western digits for money (clearer on phones / LTR numbers), just format grouping.
+    return n;
+  }
+
+  function fmtMoney(n){
+    if (n === null || n === undefined || isNaN(n)) return "—";
+    return Number(n).toLocaleString("en-EG", { maximumFractionDigits: 0 }) + " ج.م";
+  }
+  function fmtMoneyPlain(n){
+    if (n === null || n === undefined || isNaN(n)) return "—";
+    return Number(n).toLocaleString("en-EG", { maximumFractionDigits: 0 });
+  }
+  function fmtGrams(n){
+    if (n === null || n === undefined || isNaN(n)) return "٠ جم";
+    var v = Math.round(n * 100) / 100;
+    return v.toLocaleString("en-EG", { maximumFractionDigits: 2 }) + " جم";
+  }
+
+  function loadSettings(){
+    try{
+      var s = JSON.parse(localStorage.getItem(STORAGE_SETTINGS) || "null");
+      if (s && typeof s.margin === "number" && typeof s.commission === "number"){
+        state.settings = s;
+      }
+    }catch(e){}
+    document.getElementById("marginInput").value = state.settings.margin;
+    document.getElementById("commissionInput").value = state.settings.commission;
+  }
+  function saveSettings(){
+    localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(state.settings));
+  }
+
+  function loadPieces(){
+    try{
+      var p = JSON.parse(localStorage.getItem(STORAGE_PIECES) || "[]");
+      if (Array.isArray(p)) state.pieces = p;
+    }catch(e){ state.pieces = []; }
+  }
+  function savePieces(){
+    localStorage.setItem(STORAGE_PIECES, JSON.stringify(state.pieces));
+  }
+
+  function loadCache(){
+    try{
+      var c = JSON.parse(localStorage.getItem(STORAGE_CACHE) || "null");
+      if (c) return c;
+    }catch(e){}
+    return null;
+  }
+  function saveCache(c){
+    localStorage.setItem(STORAGE_CACHE, JSON.stringify(c));
+  }
+
+  function computeEgpPrices(usdPerGram, egpRate, margin, commission){
+    var out = {};
+    KARATS.forEach(function(k){
+      var usd = usdPerGram[k];
+      if (usd === null || usd === undefined) { out[k] = { buy:null, sell:null }; return; }
+      var sell = usd * egpRate * (1 + margin/100);
+      var buy = sell / (1 + commission/100);
+      out[k] = { buy: buy, sell: sell };
+    });
+    return out;
+  }
+
+  function recomputeFromCurrentUsd(){
+    if (!state.prices) return;
+    state.egp = computeEgpPrices(state.prices.usd, state.prices.egp_rate, state.settings.margin, state.settings.commission);
+  }
+
+  function render(){
+    renderPriceTable();
+    renderStats();
+    renderPieces();
+    renderHero();
+    prefillPricePerGram();
+  }
+
+  function renderPriceTable(){
+    var tbody = document.getElementById("priceTableBody");
+    tbody.innerHTML = "";
+    KARATS.forEach(function(k){
+      var row = document.createElement("tr");
+      if (k === 21) row.className = "highlight";
+      var d = state.egp ? state.egp[k] : null;
+      row.innerHTML =
+        '<td><span class="karat-label"><span class="karat-num">' + k + '</span> عيار</span></td>' +
+        '<td class="price-buy">' + (d && d.buy!=null ? fmtMoneyPlain(d.buy) : "—") + '</td>' +
+        '<td class="price-sell">' + (d && d.sell!=null ? fmtMoneyPlain(d.sell) : "—") + '</td>';
+      tbody.appendChild(row);
+    });
+  }
+
+  function renderStats(){
+    if (!state.egp || !state.egp[24] || state.egp[24].sell == null){
+      document.getElementById("statOunce").textContent = "—";
+      document.getElementById("statPound").textContent = "—";
+      document.getElementById("statKilo").textContent = "—";
+      document.getElementById("statUsd").textContent = "—";
+      return;
+    }
+    var ounce = state.egp[24].sell * 31.1034768;
+    var pound = state.egp[21].sell * 8;
+    var kilo24 = state.egp[24].sell * 1000;
+    document.getElementById("statOunce").textContent = fmtMoney(ounce);
+    document.getElementById("statPound").textContent = fmtMoney(pound);
+    document.getElementById("statKilo").textContent = fmtMoney(kilo24);
+    document.getElementById("statUsd").textContent = state.prices && state.prices.egp_rate ? (Math.round(state.prices.egp_rate * 100) / 100).toLocaleString("en-EG") + " ج.م" : "—";
+  }
+
+  function pieceValue(p){
+    if (!state.egp || !state.egp[p.karat] || state.egp[p.karat].buy == null){
+      return p.grams * p.pricePerGram;
+    }
+    return p.grams * p.pricePerGram;
+  }
+
+  function renderPieces(){
+    var list = document.getElementById("piecesList");
+    var empty = document.getElementById("emptyState");
+    list.querySelectorAll(".piece-row").forEach(function(el){ el.remove(); });
+    if (state.pieces.length === 0){
+      if (!document.getElementById("emptyState")) list.appendChild(empty);
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+    state.pieces.slice().reverse().forEach(function(p){
+      var row = document.createElement("div");
+      row.className = "piece-row";
+      var value = pieceValue(p);
+      row.innerHTML =
+        '<div class="piece-info">' +
+          '<div class="piece-title"><span class="k">' + p.karat + '</span><span>' + (p.desc ? escapeHtml(p.desc) : "قطعة ذهب") + '</span></div>' +
+          '<div class="piece-meta">' + fmtGrams(p.grams) + ' × ' + fmtMoneyPlain(p.pricePerGram) + ' ج.م/جم</div>' +
+        '</div>' +
+        '<div class="piece-value">' + fmtMoney(value) + '</div>' +
+        '<div class="del-btn" data-id="' + p.id + '">✕</div>';
+      list.appendChild(row);
+    });
+    list.querySelectorAll(".del-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-id");
+        state.pieces = state.pieces.filter(function(p){ return String(p.id) !== id; });
+        savePieces();
+        render();
+      });
+    });
+  }
+
+  function renderHero(){
+    var total = 0, grams = 0;
+    state.pieces.forEach(function(p){
+      total += pieceValue(p);
+      grams += Number(p.grams) || 0;
+    });
+    document.getElementById("heroTotal").textContent = fmtMoneyPlain(total);
+    document.getElementById("heroGrams").textContent = fmtGrams(grams);
+  }
+
+  function escapeHtml(s){
+    var div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function prefillPricePerGram(){
+    var karat = Number(document.getElementById("karatSelect").value);
+    var input = document.getElementById("pricePerGramInput");
+    if (input.dataset.userEdited === "1") return;
+    if (state.egp && state.egp[karat] && state.egp[karat].buy != null){
+      input.value = (Math.round(state.egp[karat].buy * 100) / 100);
+    }
+  }
+
+  function setLive(isLive, stale){
+    var dot = document.getElementById("liveDot");
+    var text = document.getElementById("liveText");
+    var staleNote = document.getElementById("staleNote");
+    if (isLive){
+      dot.classList.remove("offline");
+      text.textContent = "لايف";
+      staleNote.classList.remove("show");
+    } else {
+      dot.classList.add("offline");
+      text.textContent = stale ? "آخر سعر محفوظ" : "بيحمل...";
+      if (stale) staleNote.classList.add("show");
+    }
+  }
+
+  function setUpdatedAtText(date, stale){
+    var el = document.getElementById("updatedAt");
+    if (!date){ el.textContent = "جارِ التحديث..."; return; }
+    var t = new Date(date);
+    var hh = t.getHours().toString().padStart(2, "0");
+    var mm = t.getMinutes().toString().padStart(2, "0");
+    el.textContent = (stale ? "آخر تحديث (محفوظ) " : "آخر تحديث ") + hh + ":" + mm;
+  }
+
+  function fetchWithTimeout(url, ms){
+    var controller = new AbortController();
+    var timer = setTimeout(function(){ controller.abort(); }, ms || 8000);
+    return fetch(url, { signal: controller.signal, cache: "no-store" }).finally(function(){ clearTimeout(timer); });
+  }
+
+  function fetchPrices(isManual){
+    var btn = document.getElementById("refreshBtn");
+    btn.classList.add("spinning");
+    setLive(false, false);
+
+    var goldPromise = fetchWithTimeout("https://api.goldprice.dev/v1/carat?currency=USD", 9000).then(function(r){
+      if (!r.ok) throw new Error("gold api error");
+      return r.json();
+    });
+    var fxPromise = fetchWithTimeout("https://open.er-api.com/v6/latest/USD", 9000).then(function(r){
+      if (!r.ok) throw new Error("fx api error");
+      return r.json();
+    });
+
+    Promise.all([goldPromise, fxPromise]).then(function(results){
+      var gold = results[0];
+      var fx = results[1];
+      var egpRate = fx && fx.rates && fx.rates.EGP;
+      if (!egpRate) throw new Error("no egp rate");
+
+      var usd = {
+        24: Number(gold.price_gram_24k),
+        21: Number(gold.price_gram_21k),
+        18: Number(gold.price_gram_18k),
+        14: Number(gold.price_gram_14k)
+      };
+      if (!usd[24] || !usd[21]) throw new Error("bad gold payload");
+
+      state.prices = { usd: usd, egp_rate: Number(egpRate), fetchedAt: Date.now() };
+      state.isStale = false;
+      recomputeFromCurrentUsd();
+      saveCache(state.prices);
+
+      setLive(true, false);
+      setUpdatedAtText(state.prices.fetchedAt, false);
+      render();
+    }).catch(function(err){
+      console.warn("dahaby: price fetch failed", err);
+      var cache = loadCache();
+      if (cache){
+        state.prices = cache;
+        state.isStale = true;
+        recomputeFromCurrentUsd();
+        setLive(false, true);
+        setUpdatedAtText(cache.fetchedAt, true);
+        render();
+      } else {
+        setLive(false, false);
+        document.getElementById("updatedAt").textContent = "تعذر تحميل الأسعار";
+        document.getElementById("staleNote").classList.add("show");
+        document.getElementById("staleNote").textContent = "⚠️ مش قادرين نجيب السعر دلوقتي، وملقيناش نسخة محفوظة. جرب تحدّث تاني.";
+      }
+    }).finally(function(){
+      btn.classList.remove("spinning");
+    });
+  }
+
+  // ---- events ----
+  document.getElementById("refreshBtn").addEventListener("click", function(){ fetchPrices(true); });
+
+  document.getElementById("karatSelect").addEventListener("change", function(){
+    document.getElementById("pricePerGramInput").dataset.userEdited = "0";
+    prefillPricePerGram();
+  });
+  document.getElementById("pricePerGramInput").addEventListener("input", function(e){
+    e.target.dataset.userEdited = "1";
+  });
+
+  document.getElementById("addBtn").addEventListener("click", function(){
+    var grams = parseFloat(document.getElementById("gramsInput").value);
+    var karat = Number(document.getElementById("karatSelect").value);
+    var price = parseFloat(document.getElementById("pricePerGramInput").value);
+    var desc = document.getElementById("descInput").value.trim();
+
+    if (!grams || grams <= 0){
+      document.getElementById("gramsInput").focus();
+      return;
+    }
+    if (!price || price <= 0){
+      document.getElementById("pricePerGramInput").focus();
+      return;
+    }
+
+    state.pieces.push({
+      id: Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+      grams: grams,
+      karat: karat,
+      pricePerGram: price,
+      desc: desc
+    });
+    savePieces();
+
+    document.getElementById("gramsInput").value = "";
+    document.getElementById("descInput").value = "";
+    document.getElementById("pricePerGramInput").dataset.userEdited = "0";
+
+    render();
+  });
+
+  document.getElementById("settingsToggle").addEventListener("click", function(){
+    document.getElementById("settingsPanel").classList.toggle("show");
+  });
+  document.getElementById("marginInput").addEventListener("input", function(e){
+    var v = parseFloat(e.target.value);
+    state.settings.margin = isNaN(v) ? 0 : v;
+    saveSettings();
+    recomputeFromCurrentUsd();
+    render();
+  });
+  document.getElementById("commissionInput").addEventListener("input", function(e){
+    var v = parseFloat(e.target.value);
+    state.settings.commission = isNaN(v) ? 0 : v;
+    saveSettings();
+    recomputeFromCurrentUsd();
+    render();
+  });
+
+  // ---- init ----
+  loadSettings();
+  loadPieces();
+  render();
+  fetchPrices(false);
+  setInterval(function(){ fetchPrices(false); }, REFRESH_MS);
+
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").catch(function(e){ console.warn("sw register failed", e); });
+    });
+  }
+})();
+</script>
+</body>
+</html>
