@@ -367,6 +367,21 @@
   .add-btn svg{ width:18px; height:18px; flex-shrink:0; }
   .add-btn:active{ transform:scale(.98); }
 
+  .cancel-edit-btn{
+    display:none;
+    width:100%;
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    font-family:'Tajawal', sans-serif;
+    font-size:13px;
+    font-weight:700;
+    padding:10px;
+    cursor:pointer;
+    margin-top:8px;
+  }
+  .cancel-edit-btn.show{ display:block; }
+
   .live-result{
     display:flex;
     align-items:center;
@@ -377,14 +392,31 @@
     margin-bottom:4px;
   }
   .live-result-label{ font-size:12.5px; color:var(--text-dim); font-weight:700; }
-  .live-result-value{
+  .live-result-value-wrap{
+    display:flex;
+    align-items:baseline;
+    gap:5px;
+    direction:ltr;
+    unicode-bidi:plaintext;
+  }
+  .live-result-input{
     font-family:'Cairo', sans-serif;
     font-weight:900;
     font-size:20px;
     color:var(--gold-1);
-    direction:ltr;
-    unicode-bidi:plaintext;
-    transition:transform .12s ease;
+    background:transparent;
+    border:none;
+    outline:none;
+    padding:0;
+    max-width:150px;
+    text-align:left;
+  }
+  .live-result-cur{
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size:13px;
+    color:var(--gold-1);
+    opacity:.8;
   }
 
   /* Pieces list */
@@ -442,12 +474,10 @@
     unicode-bidi:plaintext;
     white-space:nowrap;
   }
-  .del-btn{
+  .piece-actions{ display:flex; gap:6px; }
+  .del-btn, .edit-btn{
     width:20px; height:20px;
     border-radius:0;
-    border:1px solid rgba(232,85,106,.3);
-    background:rgba(232,85,106,.08);
-    color:var(--red);
     font-size:10px;
     line-height:1;
     display:flex; align-items:center; justify-content:center;
@@ -455,7 +485,18 @@
     flex-shrink:0;
     transition:background .15s ease, transform .12s ease;
   }
+  .del-btn{
+    border:1px solid rgba(232,85,106,.3);
+    background:rgba(232,85,106,.08);
+    color:var(--red);
+  }
   .del-btn:active{ transform:scale(.88); background:rgba(232,85,106,.2); }
+  .edit-btn{
+    border:1px solid var(--border);
+    background:var(--gold-soft);
+    color:var(--gold-1);
+  }
+  .edit-btn:active{ transform:scale(.88); background:rgba(243,201,95,.22); }
   .empty-state{
     text-align:center;
     padding:26px 10px;
@@ -574,7 +615,7 @@
   </section>
 
   <!-- Add piece -->
-  <section class="card">
+  <section class="card" id="addPieceCard">
     <div class="card-title-row">
       <div class="card-title">إضافة <span class="sub">جرامات وعيار وسعر</span></div>
     </div>
@@ -605,12 +646,16 @@
     </div>
     <div class="live-result">
       <span class="live-result-label">الناتج</span>
-      <span class="live-result-value" id="liveResultValue">٠ ج.م</span>
+      <span class="live-result-value-wrap">
+        <input type="text" inputmode="decimal" class="live-result-input" id="liveResultInput" value="0">
+        <span class="live-result-cur">ج.م</span>
+      </span>
     </div>
     <button class="add-btn" id="addBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      إضافة للقائمة
+      <span id="addBtnLabel">إضافة للقائمة</span>
     </button>
+    <button class="cancel-edit-btn" id="cancelEditBtn">إلغاء التعديل</button>
   </section>
 
   <!-- Pieces list -->
@@ -646,7 +691,8 @@
     egp: null,          // { 24:{buy,sell}, 21:{...}, ... }
     pieces: [],
     settings: { margin: 0, commission: 0.83 },
-    isStale: false
+    isStale: false,
+    editingId: null
   };
 
   function toArabicNum(n){
@@ -790,15 +836,24 @@
         '</div>' +
         '<div class="piece-side">' +
           '<div class="piece-value">' + fmtMoney(value) + '</div>' +
-          '<div class="del-btn" data-id="' + p.id + '">✕</div>' +
+          '<div class="piece-actions">' +
+            '<div class="edit-btn" data-id="' + p.id + '">✎</div>' +
+            '<div class="del-btn" data-id="' + p.id + '">✕</div>' +
+          '</div>' +
         '</div>';
       list.appendChild(row);
+    });
+    list.querySelectorAll(".edit-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        startEditPiece(btn.getAttribute("data-id"));
+      });
     });
     list.querySelectorAll(".del-btn").forEach(function(btn){
       btn.addEventListener("click", function(){
         var id = btn.getAttribute("data-id");
         state.pieces = state.pieces.filter(function(p){ return String(p.id) !== id; });
         savePieces();
+        if (String(state.editingId) === String(id)) exitEditMode();
         render();
       });
     });
@@ -836,15 +891,21 @@
     badge.classList.toggle("edited", edited);
   }
 
+  function sizeResultInput(input){
+    input.style.width = (Math.max(1, input.value.length) + 1) + "ch";
+  }
+
   function updateLiveResult(){
+    var input = document.getElementById("liveResultInput");
+    if (document.activeElement === input) return; // don't fight the user while they're typing into it directly
     var grams = parseFloat(document.getElementById("gramsInput").value);
     var price = parseFloat(document.getElementById("pricePerGramInput").value);
-    var el = document.getElementById("liveResultValue");
     if (grams > 0 && price > 0){
-      el.textContent = fmtMoney(grams * price);
+      input.value = String(Math.round(grams * price));
     } else {
-      el.textContent = "٠ ج.م";
+      input.value = "0";
     }
+    sizeResultInput(input);
   }
 
   function setLive(isLive, stale){
@@ -968,6 +1029,59 @@
   });
   document.getElementById("gramsInput").addEventListener("input", updateLiveResult);
 
+  // Editing the result directly back-calculates grams from the typed amount
+  // and the CURRENT price per gram — it never touches the price field.
+  var liveResultInput = document.getElementById("liveResultInput");
+  liveResultInput.addEventListener("input", function(e){
+    sizeResultInput(e.target);
+    var price = parseFloat(document.getElementById("pricePerGramInput").value);
+    var gramsField = document.getElementById("gramsInput");
+    if (!(price > 0)) return;
+    var v = parseFloat(e.target.value);
+    if (!(v > 0)){
+      gramsField.value = "";
+      return;
+    }
+    var grams = v / price;
+    gramsField.value = (Math.round(grams * 100) / 100).toString();
+  });
+  liveResultInput.addEventListener("focus", function(){ this.select(); });
+  liveResultInput.addEventListener("blur", updateLiveResult);
+
+  function startEditPiece(id){
+    var piece = state.pieces.filter(function(p){ return String(p.id) === String(id); })[0];
+    if (!piece) return;
+    state.editingId = id;
+    document.getElementById("gramsInput").value = piece.grams;
+    document.getElementById("karatSelect").value = String(piece.karat);
+    document.getElementById("pricePerGramInput").value = piece.pricePerGram;
+    document.getElementById("pricePerGramInput").dataset.userEdited = "1";
+    document.getElementById("descInput").value = piece.desc || "";
+    updateAutoBadge();
+    updateLiveResult();
+    setEditMode(true);
+    document.getElementById("addPieceCard").scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("gramsInput").focus();
+  }
+
+  function setEditMode(on){
+    document.getElementById("addBtnLabel").textContent = on ? "حفظ التعديل" : "إضافة للقائمة";
+    document.getElementById("cancelEditBtn").classList.toggle("show", on);
+  }
+
+  function exitEditMode(){
+    state.editingId = null;
+    document.getElementById("gramsInput").value = "";
+    document.getElementById("descInput").value = "";
+    document.getElementById("pricePerGramInput").dataset.userEdited = "0";
+    setEditMode(false);
+  }
+
+  document.getElementById("cancelEditBtn").addEventListener("click", function(){
+    exitEditMode();
+    render();
+  });
+
   document.getElementById("addBtn").addEventListener("click", function(){
     var grams = parseFloat(document.getElementById("gramsInput").value);
     var karat = Number(document.getElementById("karatSelect").value);
@@ -983,13 +1097,25 @@
       return;
     }
 
-    state.pieces.push({
-      id: Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-      grams: grams,
-      karat: karat,
-      pricePerGram: price,
-      desc: desc
-    });
+    if (state.editingId){
+      var piece = state.pieces.filter(function(p){ return String(p.id) === String(state.editingId); })[0];
+      if (piece){
+        piece.grams = grams;
+        piece.karat = karat;
+        piece.pricePerGram = price;
+        piece.desc = desc;
+      }
+      state.editingId = null;
+      setEditMode(false);
+    } else {
+      state.pieces.push({
+        id: Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+        grams: grams,
+        karat: karat,
+        pricePerGram: price,
+        desc: desc
+      });
+    }
     savePieces();
 
     document.getElementById("gramsInput").value = "";
