@@ -37,8 +37,8 @@
     --text-faint:#6f6656;
     --green:#3ecf6a;
     --red:#e8556a;
-    --radius:20px;
-    --radius-sm:14px;
+    --radius:0px;
+    --radius-sm:0px;
   }
 
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -92,10 +92,10 @@
     background:var(--card-2);
     border:1px solid var(--border);
     padding:6px 12px;
-    border-radius:999px;
+    border-radius:0;
   }
   .dot{
-    width:8px; height:8px; border-radius:50%;
+    width:8px; height:8px; border-radius:0;
     background:var(--green);
     box-shadow:0 0 0 0 rgba(62,207,106,.6);
     animation:pulse 1.8s infinite;
@@ -155,7 +155,7 @@
     font-size:12.5px;
     font-weight:700;
     padding:7px 12px;
-    border-radius:999px;
+    border-radius:0;
     cursor:pointer;
     transition:transform .15s ease, background .15s ease;
   }
@@ -184,7 +184,7 @@
     grid-template-columns:1fr 1fr 1fr;
     align-items:center;
     background:rgba(255,255,255,.015);
-    border-radius:12px;
+    border-radius:0;
     padding:12px 8px;
     margin-bottom:8px;
     font-family:'Cairo', sans-serif;
@@ -303,7 +303,7 @@
     background:var(--gold-soft);
     border:1px solid var(--border);
     padding:2px 8px;
-    border-radius:999px;
+    border-radius:0;
     transition:color .15s ease, background .15s ease, border-color .15s ease;
   }
   .auto-badge.edited{
@@ -392,7 +392,7 @@
     font-size:11px;
     font-weight:800;
     padding:2px 7px;
-    border-radius:999px;
+    border-radius:0;
     flex-shrink:0;
   }
   .piece-title .desc{
@@ -420,7 +420,7 @@
   }
   .del-btn{
     width:20px; height:20px;
-    border-radius:50%;
+    border-radius:0;
     border:1px solid rgba(232,85,106,.3);
     background:rgba(232,85,106,.08);
     color:var(--red);
