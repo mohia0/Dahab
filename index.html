@@ -182,8 +182,8 @@
     color:var(--text-faint);
     cursor:pointer;
   }
-  .collapse-toggle svg{ width:16px; height:16px; transition:transform .2s ease; }
-  #pricesCard.collapsed .collapse-toggle svg{ transform:rotate(180deg); }
+  .collapse-toggle svg{ width:16px; height:16px; transition:transform .2s ease; transform:rotate(180deg); }
+  #pricesCard.collapsed .collapse-toggle svg{ transform:rotate(0deg); }
   #pricesCard.collapsed .collapse-toggle{ border-top:none; margin-top:0; }
 
   /* Price table (CSS grid, not a real <table> — Chrome doesn't clip a <tr>
@@ -534,6 +534,7 @@
     color:var(--text-faint);
     font-size:12.5px;
     padding:10px;
+    margin-top:6px;
     cursor:pointer;
     text-align:center;
   }
