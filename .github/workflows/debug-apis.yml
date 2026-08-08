@@ -1,0 +1,27 @@
+name: Debug price APIs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test goldprice.dev
+        run: |
+          echo "--- headers ---"
+          curl -sS -D - -o /tmp/gold.json "https://api.goldprice.dev/v1/carat?currency=USD" || true
+          echo "--- body ---"
+          cat /tmp/gold.json || true
+      - name: Test open.er-api.com
+        run: |
+          echo "--- headers ---"
+          curl -sS -D - -o /tmp/fx.json "https://open.er-api.com/v6/latest/USD" || true
+          echo "--- body (first 500 chars) ---"
+          head -c 500 /tmp/fx.json || true
+      - name: Simulate browser CORS preflight-relevant fetch
+        run: |
+          echo "--- goldprice.dev CORS header check ---"
+          curl -sS -D - -o /dev/null -H "Origin: https://mohia0.github.io" "https://api.goldprice.dev/v1/carat?currency=USD" | grep -i "access-control" || echo "NO CORS HEADER FOUND"
+          echo "--- er-api.com CORS header check ---"
+          curl -sS -D - -o /dev/null -H "Origin: https://mohia0.github.io" "https://open.er-api.com/v6/latest/USD" | grep -i "access-control" || echo "NO CORS HEADER FOUND"
